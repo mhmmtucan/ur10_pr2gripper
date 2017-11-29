@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ur_description
+    relative_path: urdf/b.urdf
+  SRDF:
+    relative_path: config/ur10.gripper.srdf
+  CONFIG:
+    author_name: mhmmtucan
+    author_email: mhmmtucan@gmail.com
+    generated_timestamp: 1511696804
