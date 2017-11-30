@@ -1,0 +1,14 @@
+gripper_controller:
+  type: effort_controllers/GripperActionController
+  joints:
+      - r_gripper_r_joint
+      - r_gripper_l_finger_joint
+      - r_gripper_motor_screw_joint
+      - r_gripper_motor_slider_joint
+      - r_gripper_r_finger_joint
+  constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+  stop_trajectory_duration: 0.5
+  state_publish_rate:  25
+  action_monitor_rate: 10
