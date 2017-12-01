@@ -4,10 +4,11 @@
     
   <!-- Remap follow_joint_trajectory -->
   <remap if="$(arg sim)" from="/follow_joint_trajectory" to="/arm_controller/follow_joint_trajectory"/>
+  <remap if="$(arg sim)" from="/follow_joint_trajectory" to="/gripper_controller/follow_joint_trajectory"/>
   
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="/use_gui" value="$(arg use_gui)"/>
-    <rosparam param="/source_list">joint_states</rosparam>
+    <rosparam param="/source_list">[/joint_states]</rosparam>
   </node>
   
   <!-- Launch moveit -->

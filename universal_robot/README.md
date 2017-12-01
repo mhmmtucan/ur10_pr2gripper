@@ -92,9 +92,10 @@ roslaunch ur10_moveit_config ur10_moveit_planning_execution.launch sim:=true lim
 roslaunch ur10_moveit_config moveit_rviz.launch config:=true
 
 
+
 roslaunch ur_gazebo ur10.launch
 
-roslaunch ur10_moveit_config ur10_moveit_planning_execution.launch sim:=true
+roslaunch ur10_moveit_config ur10_moveit_planning_execution.launch sim:=true use_gui:=false
 
 roslaunch ur10_moveit_config moveit_rviz.launch config:=true
 
