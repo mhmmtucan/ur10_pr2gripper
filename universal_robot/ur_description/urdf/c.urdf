@@ -490,7 +490,7 @@
         <mesh filename="package://pr2_description/meshes/gripper_v0/l_finger.stl"/>
       </geometry>
     </collision>
-  </link>
+  </link>EffortJointInterface
   <!-- Finger tip -->
   <joint name="r_gripper_l_finger_tip_joint" type="revolute">
     <axis xyz="0 0 -1"/>
@@ -638,7 +638,22 @@
     <kp value="10000000.0"/>
     <kd value="1.0"/>
   </gazebo>
-
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_r_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>r_gripper_l_finger_link</bodyName>
+      <topicName>r_gripper_l_finger_pose_ground_truth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>base_link</frameName>
+    </plugin>
+    <plugin filename="libgazebo_ros_f3d.so" name="f3d_r_gripper_l_finger_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <bodyName>r_gripper_l_finger_link</bodyName>
+      <topicName>r_gripper_l_finger_force_ground_truth</topicName>
+    </plugin>
+  </gazebo>
   <gazebo reference="r_gripper_r_finger_tip_joint">
     <stopKd value="1.0"/>
     <stopKp value="10000000.0"/>
@@ -718,7 +733,7 @@
         <dynamics>
           <damping>0.2</damping>
         </dynamics>
-      </axis>
+      </axis>transmission_interface/SimpleTransmission
       <pose>0.05891 0.031 0 0 0 0</pose>
     </joint>
     <joint name="r_gripper_r_parallel_tip_joint" type="revolute">
@@ -819,7 +834,7 @@
   <transmission name="r_gripper_l_finger_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="r_gripper_l_finger_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="r_gripper_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -828,7 +843,7 @@
   <transmission name="r_gripper_r_finger_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="r_gripper_r_finger_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="r_gripper_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -837,7 +852,7 @@
   <transmission name="r_gripper_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="r_gripper_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="r_gripper_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -847,7 +862,7 @@
   <transmission name="r_gripper_l_finger_tip_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="r_gripper_l_finger_tip_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="r_gripper_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -856,16 +871,28 @@
   <transmission name="r_gripper_r_finger_tip_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="r_gripper_r_finger_tip_joint">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  
+ 
+   <transmission name="r_gripper_r_finger_motor_screw_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="r_gripper_motor_slider_joint">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="r_gripper_motor">
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
-
-
-
-
+    <transmission name="r_gripper_r_finger_motor_slider_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="r_gripper_motor_screw_joint">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  
+  
   <link name="world"/>
   <joint name="world_joint" type="fixed">
     <parent link="world"/>
@@ -873,3 +900,4 @@
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.4"/>
   </joint>
 </robot>
+
