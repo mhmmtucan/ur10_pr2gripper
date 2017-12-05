@@ -18,7 +18,8 @@
 		 elbow_joint_lower_limit="${-pi}" elbow_joint_upper_limit="${pi}"
 		 wrist_1_lower_limit="${-pi}" wrist_1_upper_limit="${pi}"
 		 wrist_2_lower_limit="${-pi}" wrist_2_upper_limit="${pi}"
-		 wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}" />
+		 wrist_3_lower_limit="${-pi}" wrist_3_upper_limit="${pi}"
+/>
   <!-- gripper -->
   <xacro:pr2_gripper_v0 reflect="-1.0" side="r" parent="ee_link"
                screw_reduction="${4.0/1000.0}"
@@ -40,7 +41,7 @@
   <joint name="world_joint" type="fixed">
     <parent link="world" />
     <child link = "base_link" />
-    <origin xyz="0.0 0.0 0.4" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.0 0.0 0.8" rpy="0.0 0.0 0.0" />
   </joint>
   
   
