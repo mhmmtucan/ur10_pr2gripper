@@ -1,0 +1,1 @@
+gnome-terminal  --tab -e "bash -c 'roslaunch ur_gazebo ur10.launch; bash'" --tab -e "bash -c 'sleep 5; roslaunch ur10_moveit_config ur10_moveit_planning_execution.launch sim:=true use_gui:=false; bash'" --tab -e "bash -c 'sleep 10; roslaunch ur10_moveit_config moveit_rviz.launch config:=true; bash'"

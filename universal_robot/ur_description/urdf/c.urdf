@@ -233,7 +233,7 @@
   <transmission name="shoulder_pan_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="shoulder_pan_joint">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="shoulder_pan_motor">
       <mechanicalReduction>1</mechanicalReduction>
@@ -881,7 +881,7 @@
   <joint name="world_joint" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.8"/>
+    <origin rpy="0.0 0.0 -1.6" xyz="0.0 0.0 0.8"/>
   </joint>
 </robot>
 
