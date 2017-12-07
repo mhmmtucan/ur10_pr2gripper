@@ -15,10 +15,14 @@ moveit_commander.roscpp_initialize(sys.argv)
 # init moveit_commander
 robot = moveit_commander.RobotCommander()
 scene = moveit_commander.PlanningSceneInterface()
-group = moveit_commander.MoveGroupCommander("arm")
+group = moveit_commander.MoveGroupCommander("gripper")
 
 display_trajectroy_publisher = rospy.Publisher('move_group/display_planned_path',moveit_msgs.msg.DisplayTrajectory,queue_size=20)
 
+print "Get active joints" 
+print group.get_active_joints()
+print "Get joints" 
+print group.get_joints()
 
 print "============ Waiting for RVIZ ============"
 rospy.sleep(2)
