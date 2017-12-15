@@ -49,10 +49,11 @@ if __name__=='__main__':
     rospy.sleep(1)
 
     # clean the scene
-    scene.remove_world_object("box")
+    scene.remove_world_object("box1")
     scene.remove_world_object("ground")
     scene.remove_world_object("platform")
     scene.remove_world_object("cam")
+    scene.remove_world_object("red")
 
     # publish a demo scene
     p = PoseStamped()
@@ -60,13 +61,10 @@ if __name__=='__main__':
     p.pose.orientation.w = 1.0
     p.pose.position.x = 0.767938
     p.pose.position.y = -0.213985
-    p.pose.position.z = 0.060
-    scene.add_box("box1", p, (0.075, 0.075, 0.120))
+    p.pose.position.z = 0.060 + 0.2
+    scene.add_box("box1", p, (0.075, 0.075, 0.180))
     
     # add cylindral platform to scene
-    p = PoseStamped()
-    p.header.frame_id = robot.get_planning_frame()
-    p.pose.orientation.w = 1.0
     p.pose.position.x = 0
     p.pose.position.y = 0
     p.pose.position.z = 0.339
@@ -80,6 +78,12 @@ if __name__=='__main__':
     p.pose.position.z = 1.647
     p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(-1.507854, 1.545821, 0.060861))
     scene.add_box("cam", p, (0.073, 0.276, 0.072))
+    
+    p.pose.position.x = -0.366010
+    p.pose.position.y = 0.878589
+    p.pose.position.z = 0
+    p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0, 0, 0.060861))
+    scene.add_box("red", p, (0.15, 0.15, 0.01))
     
     rospy.sleep(1)
 

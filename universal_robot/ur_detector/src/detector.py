@@ -12,7 +12,7 @@ import sensor_msgs.point_cloud2 as pc2
 from collections import OrderedDict
 from gazebo_msgs.msg import ModelStates
 from cv_bridge import CvBridge, CvBridgeError
-from robotics_wp1.msg import ObjectStates, Object
+from ur_detector.msg import ObjectStates, Object
 from sensor_msgs.msg import PointCloud2, PointField, Image, CameraInfo
 
 from scipy.spatial import distance as dist
@@ -27,11 +27,16 @@ class ShapeDetector:
         approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
         (x, y), (w, h), theta = cv2.minAreaRect(approx)
-        ar = w / float(h)
+        
+        if h != 0:
+            ar = w / float(h)
+        else:
+            ar = 1
+            w = -1
 
         if len(approx) == 4:
             shape = 'square' if ar >= 0.95 and ar <= 1.05 else 'rectangle'
-        else:
+        elif len(approx) > 4:
             shape = 'circle'
 
         return shape, w, theta
@@ -41,17 +46,9 @@ class ColorLabeler:
         colors = OrderedDict({
                 'black': (0, 0, 0),
 
-                'dark red': (50, 0, 0),
-                'dark green': (0, 50, 0),
-                'dark blue': (0, 0, 50),
-
-                'red': (150, 0, 0),
-                'green': (0, 150, 0),
-                'blue': (0, 0, 150),
-
-                'light red': (255, 0, 0),
-                'light green': (0, 255, 0),
-                'light blue': (0, 0, 255),
+                'red': (120, 0, 0),
+                'green': (0, 60, 0),
+                'blue': (0, 0, 180),
 
                 'white': (255, 255, 255)
             })
@@ -116,9 +113,9 @@ class ObjectPublisher:
                 #cv2.imshow('GRAY IMAGE', gray)
                 #cv2.imshow('THRESHOLD IMAGE', thresh)
 
-                edges = cv2.Canny(image, 100, 200)
-                cv2.imshow('edges', edges)
-                cv2.waitKey(1)
+                #edges = cv2.Canny(image, 100, 200)
+                #cv2.imshow('edges', edges)
+                #cv2.waitKey(1)
 
                 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
@@ -132,23 +129,29 @@ class ObjectPublisher:
 
                         shape, width, angle = self.sd.detect(c)
                         color = self.cl.label(lab, c)
-
-                        #if color != 'white' and color != 'black' and width <= 20 and width >= 10:
-                        c = c.astype('float')
-                        c *= ratio
-                        c = c.astype('int')
-
                         width *= ratio
+                        #print("{} {} {} {} {}".format(color, shape, cX , cY, width))
 
-                        text = "{} {} {} {} {}".format(color, shape, cX , cY, width)
+                        if color != 'white' and color != 'black' and width <= 40 and width >= 20:
+                            c = c.astype('float')
+                            c *= ratio
+                            c = c.astype('int')
 
-                        #cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-                        #cv2.putText(image, text, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                        obj = Object(0, 0, 0, cX, cY, width, angle, color, shape)
-                        self.objects.append(obj)
+                            text = "{} {} {} {} {}".format(color, shape, cX , cY, width)
 
-                #cv2.imshow('IMAGE', image)
-                #cv2.waitKey(1)
+                            cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
+                            cv2.putText(image, text, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                            obj = Object(len(self.objects), 0, 0, 0, cX, cY, width, angle, color, shape)
+                            self.objects.append(obj)
+                
+                #min_width = min(self.objects, key = lambda obj: obj.width).width
+                #max_width = max(self.objects, key = lambda obj: obj.width).width
+                #average_width = sum(float(obj.width) for obj in self.objects) / max(len(self.objects), 1)
+
+                #print("minimum width: {}, maximum width: {}, average width: {}".format(min_width, max_width, average_width))
+
+                cv2.imshow('IMAGE', image)
+                cv2.waitKey(1)
             
         except CvBridgeError as e:
             print(e)
@@ -159,7 +162,7 @@ class ObjectPublisher:
         for obj in self.objects:
             data_generator = pc2.read_points(cloud_data, ('x', 'y', 'z'), False, [(obj.center_x, obj.center_y)])
             for point in data_generator:
-                w_obj = Object(self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y, obj.width, obj.angle, obj.color, obj.shape)
+                w_obj = Object(obj.id, self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y, obj.width, obj.angle, obj.color, obj.shape)
                 world_objects.append(w_obj)
                 #print('x: {}, y: {}, z: {}, center x: {}, center y: {}'.format(self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y))
         
