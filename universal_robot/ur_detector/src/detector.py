@@ -130,9 +130,9 @@ class ObjectPublisher:
                         shape, width, angle = self.sd.detect(c)
                         color = self.cl.label(lab, c)
                         width *= ratio
-                        #print("{} {} {} {} {}".format(color, shape, cX , cY, width))
+                        print("{} {} {} {} {}".format(color, shape, cX , cY, width))
 
-                        if color != 'white' and color != 'black' and width <= 40 and width >= 20:
+                        if color != 'white' and color != 'black' and width <= 40 and width >= 17:
                             c = c.astype('float')
                             c *= ratio
                             c = c.astype('int')

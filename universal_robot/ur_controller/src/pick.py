@@ -35,9 +35,15 @@
 # Author: Ioan Sucan
 
 import sys
-import rospy, tf_conversions
-from moveit_commander import RobotCommander, PlanningSceneInterface, roscpp_initialize, roscpp_shutdown
-from geometry_msgs.msg import PoseStamped, Quaternion
+import rospy
+import copy
+import tf_conversions
+from moveit_commander import RobotCommander, MoveGroupCommander
+from moveit_commander import PlanningSceneInterface, roscpp_initialize, roscpp_shutdown
+from geometry_msgs.msg import PoseStamped, Pose, Quaternion
+from moveit_msgs.msg import Grasp, GripperTranslation, PlaceLocation, DisplayTrajectory
+from trajectory_msgs.msg import JointTrajectoryPoint
+from ur_controller.msg import ObjectStates, Object
 
 if __name__=='__main__':
 
@@ -79,16 +85,79 @@ if __name__=='__main__':
     p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(-1.507854, 1.545821, 0.060861))
     scene.add_box("cam", p, (0.073, 0.276, 0.072))
     
-    p.pose.position.x = -0.366010
-    p.pose.position.y = 0.878589
-    p.pose.position.z = 0
-    p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0, 0, 0.060861))
-    scene.add_box("red", p, (0.15, 0.15, 0.01))
     
     rospy.sleep(1)
 
     # pick an object
-    robot.arm.pick("box1")
 
+    arm_group = MoveGroupCommander("arm")
+ 
+    p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.946450))
+    p.pose.position.x = -0.368809
+    p.pose.position.y = -0.882567
+    p.pose.position.z = 0.3
+    scene.add_box("blue",p,(0.6, 0.6, 0.02))
+    
+    dropzone_pose = Pose()
+    dropzone_pose2 = Pose()
+    dropzone_pose3 = Pose()
+    
+    dropzone_pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+    dropzone_pose.position.x = -0.717746
+    dropzone_pose.position.y = -0.458615
+    dropzone_pose.position.z = 0.25
+
+    dropzone_pose2.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+    dropzone_pose2.position.x = -0.649493
+    dropzone_pose2.position.y = 0.742142
+    dropzone_pose2.position.z = 0.25
+    
+    dropzone_pose3.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+    dropzone_pose3.position.x = -0.871420
+    dropzone_pose3.position.y = 0.142003
+    dropzone_pose3.position.z = 0.25
+    
+    arm_group.set_pose_target(dropzone_pose2)
+    plan_arm = arm_group.plan()
+    print "Waiting for Rviz to show plan1"
+    rospy.sleep(3)
+    print "Executing-----"
+    arm_group.execute(plan_arm)
+    
+
+    
+    #p = Pose()
+    #p.orientation.w = 1
+    #p.position.x = 0.7
+    #p.position.y = -0.05
+    #p.position.z = 1.1
+    #arm_group.set_pose_target(p)
+    
+    plan_arm = arm_group.plan()
+
+    
+    
+    
+
+    
+    #print "Executing plan"
+    #robot.arm.pick("box1")
+    
+    
+    #gripper_group = MoveGroupCommander("gripper")
+    #print "Active joints",gripper_group.get_active_joints()
+    #gripper_group.set_named_target("open")
+    #plan1 = gripper_group.plan()
+    #gripper_group.execute(plan1)
+    
+    #group_variable_values = gripper_group.get_current_joint_values()
+    #print "============ Joint values: ", group_variable_values
+	
+	
+    #group_variable_values[0] = 0.5
+    #gripper_group.set_joint_value_target(group_variable_values)
+    #print "============ Joint values after: ", group_variable_values
+    #plan2 = gripper_group.plan()
+    #gripper_group.execute(plan2)
     rospy.spin()
     roscpp_shutdown()
