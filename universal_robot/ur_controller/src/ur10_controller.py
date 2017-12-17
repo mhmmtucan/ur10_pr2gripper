@@ -35,8 +35,17 @@ def callback(data):
     print "============ New callback data"
     waypoints = []
     object_to_grip = Object()
-    
+    is_gripped = False
     global arm_group, object_dict, scene, gripped_object
+    
+    arm_group.allow_replanning(True)
+    arm_group.allow_looking(True)
+    arm_group.set_goal_tolerance(0.02)
+    arm_group.set_planner_id("RRTConnectkConfigDefault")
+    arm_group.set_planning_time(30)
+    
+    if len(gripped_object) != 0:
+         is_gripped = True
     
     scene_objects = scene.get_objects().keys()
     if "paltform" not in scene_objects and "kinetic" not in scene.get_objects().keys() and "ground" not in scene.get_objects().keys():
@@ -45,7 +54,7 @@ def callback(data):
     
     print "============ Incoming objects"
     print data.objects
-    #rospy.sleep(3)
+
                 
     if len(data.objects) != 0:
         # we have objects, go on
@@ -54,7 +63,6 @@ def callback(data):
             if a.shape == '':
                 continue
             if str(a.id) not in object_dict or object_dict[str(a.id)] != "placed":
-                print "this is a", a
                 object_dict[str(a.id)] = a
                 
                 # add objects to world
@@ -63,12 +71,9 @@ def callback(data):
                     
                 object_to_grip = a
     
-    print "============ This object is going to be gripped"
-    print object_to_grip
-    #rospy.sleep(3)
-    #print "This is the active object dictionary"
-    #print object_dict
-    #rospy.sleep(1)
+    if not is_gripped:
+        print "============ This object is going to be gripped"
+        print object_to_grip
     
     print "============ Generating plan"
     target_object_pose = Pose()
@@ -82,53 +87,35 @@ def callback(data):
         arm_group.set_named_target("base_pose")
         print "============ All items placed, I am returning to base!"
     else:
-        if len(gripped_object) != 0:
-            arm_group.set_pose_target(dropzone(object_to_grip.color))
+        if is_gripped:
+            arm_group.set_pose_target(dropzone(gripped_object[0].color))
         else:    
             arm_group.set_pose_target(target_object_pose)
         
+    # go to object or container
+    plan = arm_group.plan()
     
+    if is_gripped:
+        print "============ Waiting while RVIZ displays plan for " + gripped_object[0].color +  " container"
+        rospy.sleep(1)
+        print "============ Executing plan for " + gripped_object[0].color +  " container"
+    else:
+        print "============ Waiting while RVIZ displays plan for " + object_to_grip.color +  " object"
+        rospy.sleep(1)
+        print "============ Executing plan for " + object_to_grip.color +  " object"
+        
+    arm_group.execute(plan)
     
-    # go to object
-    arm_group.set_goal_tolerance(0.01)
-    plan1 = arm_group.plan()
-    
-    print "============ Waiting while RVIZ displays plan for object"
-    rospy.sleep(1)
-    
-    print "============ Executing plan for object"
-    arm_group.execute(plan1)
-    
-    if len(gripped_object) == 0:
+    if not is_gripped:
         gripped_object.append(object_to_grip)
         print "============ Removing object"
         scene.remove_world_object("object"+str(object_to_grip.id))
         object_dict[str(object_to_grip.id)] = "placed"
     else:
+        print "============ Placing object"
+        addToContainer(gripped_object[0].color,gripped_object[0].id)
         del gripped_object[0]
-        #addToContainer(object_to_grip.color)
-    # close gripper
-
-    # go to dropzone
-    #dropzone_pose = dropzone(object_to_grip.color)
-
-    #arm_group.set_pose_target(dropzone_pose)
-    #arm_group.set_goal_tolerance(0.01)
-    #plan2 = arm_group.plan()
-    
-    #print "============ Waiting while RVIZ displays plan for container"
-    #rospy.sleep(3)
-    
-    #print "============ Finding container"
-    #arm_group.execute(plan2)
-    
-    # open gripper
-        
-    
-
-    
-    
-    
+              
     
 def init():
     roscpp_initialize(sys.argv)    
@@ -174,6 +161,27 @@ def addToScene(pos,orient,w,size,name):
         p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(orient[0], orient[1], orient[2]))
     scene.add_box(name,p,size)
      
+def addToContainer(color,id):
+    global scene, robot
+    p = PoseStamped()
+    p.header.frame_id = robot.get_planning_frame()
+    size=(0.075, 0.075, 0.180)
+    if color == "blue":
+        p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+        p.pose.position.x = -0.717746
+        p.pose.position.y = -0.458615
+        p.pose.position.z = 0.025
+    elif color == "green":
+        p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+        p.pose.position.x = -0.649493
+        p.pose.position.y = 0.742142
+        p.pose.position.z = 0.025
+    elif color == "red":
+        p.pose.orientation = Quaternion(*tf_conversions.transformations.quaternion_from_euler(0.0, 0.0, 0.0))
+        p.pose.position.x = -0.871420
+        p.pose.position.y = 0.142003
+        p.pose.position.z = 0.025
+    scene.add_box("placed"+str(id),p,size)	
       
 def dropzone(color):
     dropzone_pose = Pose()
@@ -198,6 +206,7 @@ def dropzone(color):
 def listener():
     rospy.init_node('ur10_controller', anonymous=True)
     init()
+    rospy.sleep(2)
     rospy.Subscriber("objects", ObjectStates, callback)
     
     rospy.spin()
