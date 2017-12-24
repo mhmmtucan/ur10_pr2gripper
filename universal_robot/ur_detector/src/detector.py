@@ -89,7 +89,7 @@ class ObjectPublisher:
         self.cl = ColorLabeler()
         self.sd = ShapeDetector()
 
-        self.object_pub = rospy.Publisher('objects', ObjectStates, queue_size = 10)
+        self.object_pub = rospy.Publisher('objects', ObjectStates, queue_size = 1000)
 
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("camera/depth/image_raw", Image, self.callback_image)
@@ -99,7 +99,8 @@ class ObjectPublisher:
     def callback_image(self, image_data):
         try:
             if image_data.encoding == 'rgb8':
-                self.objects = []
+                objects = []
+                #self.objects = []
                 
                 image = self.bridge.imgmsg_to_cv2(image_data, 'bgr8')
                 resized = imutils.resize(image, width = 200)
@@ -130,7 +131,7 @@ class ObjectPublisher:
                         shape, width, angle = self.sd.detect(c)
                         color = self.cl.label(lab, c)
                         width *= ratio
-                        print("{} {} {} {} {}".format(color, shape, cX , cY, width))
+                        #print("{} {} {} {} {}".format(color, shape, cX , cY, width))
 
                         if color != 'white' and color != 'black' and width <= 40 and width >= 17:
                             c = c.astype('float')
@@ -141,18 +142,20 @@ class ObjectPublisher:
 
                             cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
                             cv2.putText(image, text, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                            obj = Object(len(self.objects), 0, 0, 0, cX, cY, width, angle, color, shape)
-                            self.objects.append(obj)
+                            obj = Object(len(objects), 0, 0, 0, cX, cY, width, angle, color, shape)
+                            objects.append(obj)
                 
                 #min_width = min(self.objects, key = lambda obj: obj.width).width
                 #max_width = max(self.objects, key = lambda obj: obj.width).width
                 #average_width = sum(float(obj.width) for obj in self.objects) / max(len(self.objects), 1)
 
                 #print("minimum width: {}, maximum width: {}, average width: {}".format(min_width, max_width, average_width))
+                self.objects = objects
 
                 cv2.imshow('IMAGE', image)
                 cv2.waitKey(1)
-            
+            else:
+                return
         except CvBridgeError as e:
             print(e)
     
@@ -164,7 +167,7 @@ class ObjectPublisher:
             for point in data_generator:
                 w_obj = Object(obj.id, self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y, obj.width, obj.angle, obj.color, obj.shape)
                 world_objects.append(w_obj)
-                #print('x: {}, y: {}, z: {}, center x: {}, center y: {}'.format(self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y))
+                print('x: {}, y: {}, z: {}, center x: {}, center y: {}'.format(self.cam_x + point[0], self.cam_y - point[1], (self.cam_z - point[2]) / 2, obj.center_x, obj.center_y))
         
         objs = ObjectStates(world_objects, len(world_objects))
 
